@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="org.ancoron.postgresql:org.ancoron.postgresql.jpa:9.1.901.jdbc4.1-rc9" type="repository">
+    <properties maven-id="org.ancoron.postgresql:org.ancoron.postgresql.jpa:9.1.901.jdbc4.1-rc9" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/org.ancoron.postgresql.jpa-9.1.901.jdbc4.1-rc9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.postgresql-9.1.901.jdbc4.1-rc9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.postgresql.net-9.1.901.jdbc4.1-rc9.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.persistence-2.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.osgi-2.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.weaving-2.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.jpa-2.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.core-2.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.asm-2.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.persistence.antlr-2.3.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

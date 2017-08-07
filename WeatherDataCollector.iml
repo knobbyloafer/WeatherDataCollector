@@ -7,5 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="org.ancoron.postgresql:org.ancoron.postgresql.jpa:9.1.901.jdbc4.1-rc9" level="project" />
   </component>
 </module>
