@@ -1,5 +1,4 @@
-import java.time.LocalDateTime;
-import java.sql.Timestamp;
+package WeatherUpdater;
 
 public class WeatherData {
     public String lastUpdated = "";

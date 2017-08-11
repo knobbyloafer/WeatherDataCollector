@@ -1,23 +1,52 @@
+package WeatherUpdater;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.*;
+
 import java.io.*;
 import java.net.URL;
-import java.time.Instant;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.sql.Timestamp;
+import java.util.Properties;
 
 public class WeatherDataCollector {
     public static void main(String[] args) {
-        WeatherDatabase dbConnection = new WeatherDatabase();
+        Properties prop = new Properties();
+        InputStream input = null;
+
+        try {
+
+            input = new FileInputStream("weatherdata.properties");
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            //System.out.println(prop.getProperty("database"));
+            //System.out.println(prop.getProperty("dbuser"));
+            //System.out.println(prop.getProperty("dbpassword"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        WeatherDatabase dbConnection = new WeatherDatabase(prop);
 
         String previouslyUpdated = "";
         WeatherData wd = new WeatherData();
+        int timeToSleepMS = 10000;
+        int observationAge = 0;
 
         while (true) {
             //System.out.println("getting weather data..."); // Display the string.
@@ -41,9 +70,11 @@ public class WeatherDataCollector {
                     lastUpdated = wd.dateutc.toString();
 
                     //wd.dateutc = LocalDateTime.parse(lastUpdated);
-                    System.out.println("Last updated : " + lastUpdated + " converted to " + lastUpdated);
+                    //System.out.println("Last updated : " + lastUpdated + " converted to " + lastUpdated);
                     if (lastUpdated.compareTo(previouslyUpdated) == 0) {
-                        //System.out.println("No change, no update to report");
+                        System.out.println("No change, no update to report");
+                        // we may have just missed the updated time, don't sleep for another 60 seconds, just sleep for a few
+                        timeToSleepMS = 5000;
                     } else {
                         previouslyUpdated = lastUpdated;
 
@@ -65,6 +96,18 @@ public class WeatherDataCollector {
                                     //System.out.println("UV : " + UV);
                                     wd.windgustmph = element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
                                     //System.out.println("windGuestMaxDay : " + windGuestMaxDay);
+                                    // The Davis XML reports how old the data is.  It is also knownthe XML is regenerated every 60 seconds so see how old it is and subtract
+                                    // that from 60 seconds to decide when we should check again.  Add a second to the total to be safe
+                                    try {
+                                        observationAge = Integer.parseInt(element.getElementsByTagName("observation_age").item(0).getTextContent());
+                                        if (observationAge > 60)
+                                            timeToSleepMS = 5000; // sometimes the XML isn't updated every minute so try every 5s if longer than a minute
+                                        else
+                                            timeToSleepMS = (60 - observationAge) * 1000 + 1000;
+                                    } catch (Exception e) {
+                                        System.out.println("Observation age exception: " + e.getMessage());
+                                        timeToSleepMS = 5000;
+                                    }
                                 }
                                 //else
                                 //System.out.println("Not it: " + element.getTagName().toString());
@@ -93,6 +136,7 @@ public class WeatherDataCollector {
                         // weather underground section
                         // non rapidfire URL: weatherstation.wunderground.com
                         // use NOW for date for weather underground
+                        /*  need to move weatherunderground stuff to a dedicated method
                         String utcDate = Instant.now().toString();
                         String wunderURLString = "https://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?" +
                                 "ID=KMECARRA3&PASSWORD=c736d904&dateutc=" + utcDate + "&winddir=" + wd.winddir + "&windspeedmph=" + wd.windspeedmph +
@@ -109,13 +153,18 @@ public class WeatherDataCollector {
                         while ((inputLine = in.readLine()) != null)
                             System.out.println(inputLine);
                         in.close();
+                        */
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             try {
-                Thread.sleep(10000);
+                System.out.println("Sleeping " + timeToSleepMS + " ms before checking again");
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+                System.out.println(dateFormat.format(date)); //2016/11/16 12:08:43
+                Thread.sleep(timeToSleepMS);
             } catch (Exception e) {
                 e.printStackTrace();
             }

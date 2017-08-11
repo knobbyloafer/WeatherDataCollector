@@ -1,3 +1,5 @@
+package WeatherUpdater;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -6,7 +8,8 @@ import java.time.LocalDateTime;
 import java.util.Properties;
 
 public class WeatherDatabase {
-    private final String url = "jdbc:postgresql://localhost:5432/";
+    //private String url = "jdbc:postgresql://localhost:5432/";
+    private String url;
     private Properties props;
 
     Connection conn = null;
@@ -15,15 +18,23 @@ public class WeatherDatabase {
      *
      * @return a Connection object
      */
+    public WeatherDatabase(Properties properties) {
+        try {
+            props = new Properties();
+            url = properties.getProperty("database");
+            props.setProperty("user", properties.getProperty("dbuser"));
+            props.setProperty("password", properties.getProperty("dbpassword"));
+        } catch (Exception e) {
+            System.out.println("Error reading properties: " + e.getMessage());
+        }
+    }
+
     public Connection connect() {
         conn = null;
-        props = new Properties();
-        props.setProperty("user","postgres");
-        props.setProperty("password","w1nter");
         //props.setProperty("currentSchema","weather");
 
         try {
-            //Class.forName("org.postgresql.Driver");
+            Class.forName("org.postgresql.Driver");
             conn = DriverManager.getConnection(url, props);
             System.out.println("Connected to the PostgreSQL server successfully.");
         } catch (Exception e) {
