@@ -11,6 +11,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.sql.Timestamp;
 import java.util.Properties;
+import org.jsoup.Jsoup;
+import java.io.IOException;
+import java.time.Instant;
 
 public class WeatherDataCollector {
     public static void main(String[] args) {
@@ -30,6 +33,7 @@ public class WeatherDataCollector {
             //System.out.println(prop.getProperty("dbpassword"));
 
         } catch (IOException ex) {
+            System.out.println("Input file could not be read");
             ex.printStackTrace();
         } finally {
             if (input != null) {
@@ -51,6 +55,7 @@ public class WeatherDataCollector {
         while (true) {
             //System.out.println("getting weather data..."); // Display the string.
             try {
+                System.out.println("Parsing data...");
                 //Document temperatureXML = weatherDataCollector.loadXMLDocument("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
                 Document temperatureXML = WeatherDataCollector.getXML("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
                 temperatureXML.getDocumentElement().normalize();
@@ -94,7 +99,13 @@ public class WeatherDataCollector {
                                     //System.out.println("solarradiation : " + solarradiation);
                                     wd.UV = element.getElementsByTagName("uv_index").item(0).getTextContent();
                                     //System.out.println("UV : " + UV);
+                                    // set incase we can't find it in the html
                                     wd.windgustmph = element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
+                                    // get wind gust over last 10 minutes
+                                    // since the xml does not have the recent gust, we need to use a hack and grab it out of the html data page instead
+                                    wd.windgustmph = WeatherDataCollector.getWindGuest();
+                                    // end wind gust data
+
                                     //System.out.println("windGuestMaxDay : " + windGuestMaxDay);
                                     // The Davis XML reports how old the data is.  It is also knownthe XML is regenerated every 60 seconds so see how old it is and subtract
                                     // that from 60 seconds to decide when we should check again.  Add a second to the total to be safe
@@ -129,14 +140,14 @@ public class WeatherDataCollector {
                         //System.out.println("Dewpoint (f) : " + dewpointF);
 
                         // database update section
-                        dbConnection.connect();
-                        dbConnection.update(wd);
-                        dbConnection.close();
+                        //dbConnection.connect();
+                        //dbConnection.update(wd);
+                        //dbConnection.close();
 
                         // weather underground section
                         // non rapidfire URL: weatherstation.wunderground.com
                         // use NOW for date for weather underground
-                        /*  need to move weatherunderground stuff to a dedicated method
+                        //  need to move weatherunderground stuff to a dedicated method
                         String utcDate = Instant.now().toString();
                         String wunderURLString = "https://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?" +
                                 "ID=KMECARRA3&PASSWORD=c736d904&dateutc=" + utcDate + "&winddir=" + wd.winddir + "&windspeedmph=" + wd.windspeedmph +
@@ -153,7 +164,6 @@ public class WeatherDataCollector {
                         while ((inputLine = in.readLine()) != null)
                             System.out.println(inputLine);
                         in.close();
-                        */
                     }
                 }
             } catch (Exception e) {
@@ -169,6 +179,31 @@ public class WeatherDataCollector {
                 e.printStackTrace();
             }
         }
+    }
+
+    // HTML parse - get Wind Guest over last 10 minutes from HTML page since the data is not in the XML
+    private static String getWindGuest() {
+        try {
+            org.jsoup.nodes.Document doc = Jsoup.connect("http://www.weatherlink.com/user/knobby/index.php?view=summary&headers=1").get();
+            org.jsoup.select.Elements rows = doc.select("tr");
+            for (org.jsoup.nodes.Element row : rows) {
+                org.jsoup.select.Elements columns = row.select("td");
+                for (org.jsoup.nodes.Element column : columns) {
+                    if (column.text().compareTo("Wind Gust Speed") == 0) {
+                        //System.out.print(column.text()); // header
+                        column = column.nextElementSibling();
+                        //System.out.print(column.text()); // space
+                        column = column.nextElementSibling();
+                        String gustString = column.text();
+                        //System.out.print(column.text()); // actual wind gust over last 10 minutes
+                        return gustString.replaceAll("[^0-9.]","");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "0.0"; // exception
     }
 
     //xml parse
