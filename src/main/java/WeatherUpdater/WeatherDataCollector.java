@@ -45,7 +45,7 @@ public class WeatherDataCollector {
             }
         }
 
-        WeatherDatabase dbConnection = new WeatherDatabase(prop);
+        //WeatherDatabase dbConnection = new WeatherDatabase(prop);
 
         String previouslyUpdated = "";
         WeatherData wd = new WeatherData();
@@ -211,9 +211,5 @@ public class WeatherDataCollector {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         return db.parse(new URL(url).openStream());
-    }
-
-    private void getWeatherData(WeatherData wd) {
-
     }
 }
