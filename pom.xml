@@ -13,6 +13,12 @@
             <artifactId>postgresql</artifactId>
             <version>9.1-901.jdbc4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -55,7 +61,6 @@
                     <baseImage>java:8</baseImage>
                     <entryPoint>["java", "-jar", "/opt/${project.build.finalName}.jar"]</entryPoint>
                     <serverId>docker-hub</serverId>
-                    <registryUrl>http://knobloct3/v1</registryUrl>
                     <pushImage>false</pushImage>
                     <resources>
                         <resource>

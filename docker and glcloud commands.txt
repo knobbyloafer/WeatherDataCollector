@@ -1,0 +1,63 @@
+// create the pom file.  it will generate the jar file
+// Note - running hte Maven Projects->install (right side panel) has an error when posting to Docker (Docker internal 500 error).  Need to run the docker build command below
+Maven install
+
+// now create the container in Docker.  This will use the Dockerfile to push the image into docker
+// this is a local copy only
+//docker build -t weatherimage .
+
+// this is from hellonode sample: https://cloud.google.com/container-engine/docs/tutorials/hello-node
+// run this in the cloud
+gcloud config set project keen-hope-175917
+gcloud config set compute/zone us-east1-c
+
+// build and tag the container on the google repository
+// Note: if you need to update a version, go to the UPDATE VERSION section below
+docker build -t gcr.io/keen-hope-175917/weatherimage:v1 .
+
+// list out images to see it
+docker images
+
+// now we need to push it to gcloud when ready
+// may need to temporarily rename config.json in the .docker folder to get this to work
+gcloud docker -- push gcr.io/keen-hope-175917/weatherimage:v1
+
+// run this LOCALLY from the C:\Users\knobloct\IdeaProjects\weatherDataCollector\ to test it out
+// see this link for cleaning up containers: https://tecadmin.net/remove-docker-images-and-containers/
+// OPTIONAL
+docker run --rm -p 8080:8080 gcr.io/keen-hope-175917/weatherimage:v1
+
+// create cluster in cloud
+gcloud container clusters create weather-cluster --num-nodes=3
+// NOTE!!!! if you create clusters in google, you can use the smaller cpu/size.  That's fine but then need to run this:
+gcloud container clusters get-credentials <CLUSTER NAME GOES HERE>
+// FYI - use this to delete an old cluster if needed
+gcloud container clusters delete weather-cluster
+
+// now deploy the image
+kubectl run weather-container --image=gcr.io/keen-hope-175917/weatherimage:v1 --port 8080
+
+// get the running pods
+kubectl get pods
+
+// it's running now but needs to have an IP exposed
+kubectl expose deployment weather-container --type=LoadBalancer --port 8080
+// now get the exposed IP
+kubectl get service
+
+// scale up to all 3 containers
+kubectl scale deployment weather-container --replicas=3
+
+//UPDATE VERSION
+docker build -t gcr.io/keen-hope-175917/weatherimage:v5 .
+gcloud docker -- push gcr.io/keen-hope-175917/weatherimage:v5
+kubectl set image deployment/weather-container weather-container=gcr.io/keen-hope-175917/weatherimage:v5
+
+// info
+kubectl get deployment hello-world
+kubectl get pods
+
+// delete an active pod
+kubectl get pods
+kubectl delete pods <POD NAME>
+// it will restart it

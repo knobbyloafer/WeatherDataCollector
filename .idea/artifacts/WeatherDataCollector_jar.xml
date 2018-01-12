@@ -2,7 +2,7 @@
   <artifact type="jar" name="WeatherDataCollector:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/WeatherDataCollector_jar</output-path>
     <root id="archive" name="WeatherDataCollector.jar">
-      <element id="module-output" name="WeatherDataCollector" />
+      <element id="module-output" name="weatherDataCollector" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/org.postgresql-9.1.901.jdbc4.1-rc9.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/org.postgresql.net-9.1.901.jdbc4.1-rc9.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/org.eclipse.persistence.osgi-2.3.2.jar" path-in-jar="/" />
