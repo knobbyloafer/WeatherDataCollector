@@ -97,7 +97,7 @@ public class WeatherDataCollector {
                                         //System.out.println("solarradiation : " + solarradiation);
                                         wd.UV = element.getElementsByTagName("uv_index").item(0).getTextContent();
                                         //System.out.println("UV : " + UV);
-                                        wd.windgustmph = element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
+                                        wd.windgustmph = WeatherDataCollector.getWindGust(); // element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
                                         //System.out.println("windGuestMaxDay : " + windGuestMaxDay);
                                         // The Davis XML reports how old the data is.  It is also knownthe XML is regenerated every 60 seconds so see how old it is and subtract
                                         // that from 60 seconds to decide when we should check again.  Add a second to the total to be safe
@@ -185,7 +185,7 @@ public class WeatherDataCollector {
     }
 
     // HTML parse - get Wind Guest over last 10 minutes from HTML page since the data is not in the XML
-    private static String getWindGuest() {
+    private static String getWindGust() {
         try {
             org.jsoup.nodes.Document doc = Jsoup.connect("http://www.weatherlink.com/user/knobby/index.php?view=summary&headers=1").get();
             org.jsoup.select.Elements rows = doc.select("tr");
