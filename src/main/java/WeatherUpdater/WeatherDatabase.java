@@ -59,7 +59,7 @@ public class WeatherDatabase {
     public boolean update(WeatherData wd) {
         try {
             Statement stmt = null;
-            if (conn.isClosed()) {
+            if (conn == null || conn.isClosed()) {
                 System.out.println("DB Connection has been closed.  Re-opening.");
                 this.connect();
             }
@@ -79,12 +79,14 @@ public class WeatherDatabase {
             } catch (Exception e) {
                 stmt.cancel();
                 System.out.println("Could not execute statement, canceling: " + e.getMessage());
+                e.printStackTrace();
             }
             stmt.close();
             conn.commit();
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("Exception in database update, canceling: " + e.getMessage());
+            e.printStackTrace();
         }
         return true;
     }
