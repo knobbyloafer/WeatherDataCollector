@@ -21,6 +21,7 @@ public class WeatherDataCollector {
         WeatherDatabase dbConnection = null;
         InputStream input = null;
         Logger logger = null;
+        boolean dbEnabled = false;
 
         try {
             System.out.println("Working Directory = " + System.getProperty("user.dir"));
@@ -41,9 +42,16 @@ public class WeatherDataCollector {
             //System.out.println(prop.getProperty("dbuser"));
             //System.out.println(prop.getProperty("dbpassword"));
 
-//            dbConnection = new WeatherDatabase(prop, logger);
-//            dbConnection.connect();
-
+            try {
+                if (prop.getProperty("enabled").equalsIgnoreCase("true")) {
+                    dbEnabled = true;
+                    dbConnection = new WeatherDatabase(prop, logger);
+                    dbConnection.connect();
+                }
+            } catch (Exception e) {
+                System.out.println("A database connection could not be established: " + prop.toString());
+                e.printStackTrace();
+            }
             String previouslyUpdated = "";
             WeatherData wd = new WeatherData();
             int timeToSleepMS = 10000;
@@ -53,7 +61,8 @@ public class WeatherDataCollector {
                 //System.out.println("getting weather data..."); // Display the string.
                 try {
                     //Document temperatureXML = weatherDataCollector.loadXMLDocument("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
-                    Document temperatureXML = WeatherDataCollector.getXML("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
+                    //Document temperatureXML = WeatherDataCollector.getXML("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
+                    Document temperatureXML = WeatherDataCollector.getXML("http://api.weatherlink.com/v1/NoaaExt.xml?user=001D0A00E582&pass=kmecarra3&apiToken=286C31C17CF24654BC40A4FF23AD1AD6");
                     temperatureXML.getDocumentElement().normalize();
 
                     //System.out.println("Root element :" + temperatureXML.getDocumentElement().getNodeName());
@@ -132,7 +141,8 @@ public class WeatherDataCollector {
                             //System.out.println("Dewpoint (f) : " + dewpointF);
 
                             // database update section
-//                            dbConnection.update(wd);
+                            if (dbEnabled)
+                                dbConnection.update(wd);
 
                             // weather underground section
                             // non rapidfire URL: weatherstation.wunderground.com
@@ -140,7 +150,7 @@ public class WeatherDataCollector {
                             //  need to move weatherunderground stuff to a dedicated method
                             String utcDate = Instant.now().toString();
                             String wunderURLString = "https://rtupdate.wunderground.com/weatherstation/updateweatherstation.php?" +
-                                    "ID=KMECARRA3&PASSWORD=c736d904&dateutc=" + utcDate + "&winddir=" + wd.winddir + "&windspeedmph=" + wd.windspeedmph +
+                                    "ID=KMECARRA3&PASSWORD=c736d904&dateutc=now&winddir=" + wd.winddir + "&windspeedmph=" + wd.windspeedmph +
                                     "&windgustmph=" + wd.windgustmph + "&dailyrainin=" + wd.dailyrainin +
                                     "&tempf=" + wd.temp_f + "&rainin=" + wd.raininlasthour + "&baromin=" + wd.baromin + "&dewptf=" + wd.dewptf + "&humidity=" + wd.humidity +
                                     "&weather=&clouds=&solarradiation=" + wd.solarradiation + "&UV=" + wd.UV +
