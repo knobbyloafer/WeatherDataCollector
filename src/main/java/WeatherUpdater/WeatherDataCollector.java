@@ -60,9 +60,12 @@ public class WeatherDataCollector {
             while (true) {
                 //System.out.println("getting weather data..."); // Display the string.
                 try {
-                    //Document temperatureXML = weatherDataCollector.loadXMLDocument("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
-                    //Document temperatureXML = WeatherDataCollector.getXML("http://www.weatherlink.com/xml.php?user=knobby&pass=kmecarra3");
-                    Document temperatureXML = WeatherDataCollector.getXML("http://api.weatherlink.com/v1/NoaaExt.xml?user=001D0A00E582&pass=kmecarra3&apiToken=286C31C17CF24654BC40A4FF23AD1AD6");
+                    //Document temperatureXML = weatherDataCollector.loadXMLDocument("http://www.weatherlink.com/xml.php?user=USER&pass=PASSWORD");
+                    //Document temperatureXML = WeatherDataCollector.getXML("http://www.weatherlink.com/xml.php?user=USER&pass=PASSWORD");
+                    //Document temperatureXML = WeatherDataCollector.getXML("http://api.weatherlink.com/v1/NoaaExt.xml?user=DID&pass=PASSWORD&apiToken=APITOKEN");
+                    String weatherLinkURL = "http://api.weatherlink.com/v1/NoaaExt.xml?user="+prop.getProperty("wluser")+"&pass="+prop.getProperty("wlpassword")+"&apiToken="+prop.getProperty("wlapitoken");
+                    //System.out.println("WeatherLink URL: '"+weatherLinkURL+"'");
+                    Document temperatureXML = WeatherDataCollector.getXML(weatherLinkURL);
                     temperatureXML.getDocumentElement().normalize();
 
                     //System.out.println("Root element :" + temperatureXML.getDocumentElement().getNodeName());
@@ -106,9 +109,12 @@ public class WeatherDataCollector {
                                         //System.out.println("solarradiation : " + solarradiation);
                                         wd.UV = element.getElementsByTagName("uv_index").item(0).getTextContent();
                                         //System.out.println("UV : " + UV);
-                                        wd.windgustmph = WeatherDataCollector.getWindGust(); // element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
+                                        // 2018-07-06. Previously using weatherlink html page to find the wind guest as it was not in the xml
+                                        // now the new page no longer has the guest BUT the new XML has it :-)
+                                        //wd.windgustmph = WeatherDataCollector.getWindGust(); // element.getElementsByTagName("wind_day_high_mph").item(0).getTextContent();
+                                        wd.windgustmph = element.getElementsByTagName("wind_ten_min_gust_mph").item(0).getTextContent();
                                         //System.out.println("windGuestMaxDay : " + windGuestMaxDay);
-                                        // The Davis XML reports how old the data is.  It is also knownthe XML is regenerated every 60 seconds so see how old it is and subtract
+                                        // The Davis XML reports how old the data is.  It is also known the XML is regenerated every 60 seconds so see how old it is and subtract
                                         // that from 60 seconds to decide when we should check again.  Add a second to the total to be safe
                                         try {
                                             observationAge = Integer.parseInt(element.getElementsByTagName("observation_age").item(0).getTextContent());
@@ -194,6 +200,7 @@ public class WeatherDataCollector {
         }
     }
 
+    // 2018-07-06 no longer needed as html no longer has the data and xml does have it
     // HTML parse - get Wind Guest over last 10 minutes from HTML page since the data is not in the XML
     private static String getWindGust() {
         try {
